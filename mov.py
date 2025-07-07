@@ -94,21 +94,24 @@ if st.button("🔍 عرض التوصيات"):
         st.warning("⚠️ لا توجد توصيات لهذا الفيلم.")
     else:
         st.subheader(f"✨ أفلام مشابهة لـ: {selected_movie}")
-        for i, row in results.iterrows():
-            col1, col2 = st.columns([1, 3])
-            with col1:
-    poster_url, rating = fetch_poster(row['id'])
-    st.image(poster_url, use_container_width=True)
+       for i, row in results.iterrows():
+    col1, col2 = st.columns([1, 3])
 
-            with col2:
-                st.markdown(f"### 🎞️ {row['title']}")
-                st.markdown(f"⭐️ التقييم: `{row['vote_average']}` | 🗳️ عدد الأصوات: `{row['vote_count']}`")
-                st.markdown(f"🎭 الأنواع: `{row['genres']}` | 🎬 المخرج: `{row['director']}`")
-                st.markdown(f"📝 {row['overview'][:500]}...")
-                trailer_url = fetch_trailer_url(row['id'])
-                if trailer_url:
-                    st.markdown(f"[▶️ شاهد التريلر على YouTube]({trailer_url})")
-            st.markdown("---")
+    with col1:
+        poster_url, rating = fetch_poster(row['id'])
+        st.image(poster_url, use_container_width=True)  # ✅ تم تصحيح الباراميتر
+
+    with col2:
+        st.markdown(f"### 🎞️ {row['title']}")
+        st.markdown(f"⭐️ التقييم: `{row['vote_average']}` | 🗳️ عدد الأصوات: `{row['vote_count']}`")
+        st.markdown(f"🎭 الأنواع: `{row['genres']}` | 🎬 المخرج: `{row['director']}`")
+        st.markdown(f"📝 {row['overview'][:500]}...")
+
+        trailer_url = fetch_trailer_url(row['id'])
+        if trailer_url:
+            st.markdown(f"[▶️ شاهد التريلر على YouTube]({trailer_url})")
+
+    st.markdown("---")
 
 st.caption("🚀 Developed by Ali Ahmed Zaki")
 
