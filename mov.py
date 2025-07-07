@@ -1,3 +1,5 @@
+
+
 # app.py
 
 import streamlit as st
@@ -8,10 +10,10 @@ import pickle
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# إعداد الصفحة
+# Streamlit page configuration
 st.set_page_config(page_title="🎬 Movie Recommendation System", layout="wide")
 
-# ====== 1. تحميل المفتاح من ملف pkl ======
+# ========== 1. Load API Key from Pickle ==========
 @st.cache_data
 def load_api_key():
     with open("tmdb_api_key.pkl", "rb") as f:
@@ -19,7 +21,7 @@ def load_api_key():
 
 api_key = load_api_key()
 
-# ====== 2. تحميل البيانات ======
+# ========== 2. Load and Prepare Data ==========
 @st.cache_data
 def load_data():
     df = pd.read_csv("movies.csv")
@@ -34,7 +36,7 @@ def load_data():
 
 movies = load_data()
 
-# ====== 3. بناء مصفوفة التشابه ======
+# ========== 3. Create Similarity Matrix ==========
 @st.cache_data
 def create_similarity_matrix(df):
     tfidf = TfidfVectorizer(stop_words='english')
@@ -44,7 +46,7 @@ def create_similarity_matrix(df):
 
 similarity_matrix = create_similarity_matrix(movies)
 
-# ====== 4. جلب بوستر الفيلم ======
+# ========== 4. Fetch Poster ==========
 def fetch_poster(movie_id):
     url = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}&language=en-US'
     response = requests.get(url)
@@ -59,7 +61,7 @@ def fetch_poster(movie_id):
 
     return poster_url, rating
 
-# ====== 5. جلب رابط التريلر ======
+# ========== 5. Fetch YouTube Trailer ==========
 def fetch_trailer_url(movie_id):
     url = f'https://api.themoviedb.org/3/movie/{movie_id}/videos?api_key={api_key}&language=en-US'
     response = requests.get(url)
@@ -69,7 +71,7 @@ def fetch_trailer_url(movie_id):
             return f"https://www.youtube.com/watch?v={video['key']}"
     return None
 
-# ====== 6. دالة التوصية ======
+# ========== 6. Recommend Function ==========
 def recommend(movie_title, df, similarity_matrix, top_n=5):
     if movie_title not in df['title'].values:
         return pd.DataFrame()
@@ -80,38 +82,42 @@ def recommend(movie_title, df, similarity_matrix, top_n=5):
     recommended = df.iloc[[i[0] for i in sim_scores]]
     return recommended
 
-# ====== 7. واجهة Streamlit ======
+# ========== 7. Streamlit UI ==========
 st.title("🎬 Movie Recommendation System")
-st.markdown("اختر فيلمًا وسنقترح عليك أفلامًا مشابهة بناءً على القصة، الممثلين، المخرج، والأنواع.")
+st.markdown("Select a movie and get recommendations based on its plot, genres, cast, keywords, and director.")
 
 movie_titles = sorted(movies['title'].dropna().unique())
-selected_movie = st.selectbox("🎥 اختر فيلمًا:", movie_titles)
+selected_movie = st.selectbox("🎥 Select a movie:", movie_titles)
 
-if st.button("🔍 عرض التوصيات"):
+if st.button("🔍 Show Recommendations"):
     results = recommend(selected_movie, movies, similarity_matrix)
 
     if results.empty:
-        st.warning("⚠️ لا توجد توصيات لهذا الفيلم.")
+        st.warning("⚠️ No recommendations found for this movie.")
     else:
-        st.subheader(f"✨ أفلام مشابهة لـ: {selected_movie}")
-       for i, row in results.iterrows():
-    col1, col2 = st.columns([1, 3])
+        st.subheader(f"🎯 Top Movies Similar to: {selected_movie}")
+        
+        for i, row in results.iterrows():
+            col1, col2 = st.columns([1, 3])
 
-    with col1:
-        poster_url, rating = fetch_poster(row['id'])
-        st.image(poster_url, use_container_width=True)  # ✅ تم تصحيح الباراميتر
+            with col1:
+                poster_url, rating = fetch_poster(row['id'])
+                st.image(poster_url, use_container_width=True)
 
-    with col2:
-        st.markdown(f"### 🎞️ {row['title']}")
-        st.markdown(f"⭐️ التقييم: `{row['vote_average']}` | 🗳️ عدد الأصوات: `{row['vote_count']}`")
-        st.markdown(f"🎭 الأنواع: `{row['genres']}` | 🎬 المخرج: `{row['director']}`")
-        st.markdown(f"📝 {row['overview'][:500]}...")
+            with col2:
+                st.markdown(f"### 🎞️ {row['title']}")
+                st.markdown(f"⭐ Rating: `{row['vote_average']}` | 🗳️ Votes: `{row['vote_count']}`")
+                st.markdown(f"🎭 Genres: `{row['genres']}` | 🎬 Director: `{row['director']}`")
+                st.markdown(f"📝 {row['overview'][:500]}...")
 
-        trailer_url = fetch_trailer_url(row['id'])
-        if trailer_url:
-            st.markdown(f"[▶️ شاهد التريلر على YouTube]({trailer_url})")
+                trailer_url = fetch_trailer_url(row['id'])
+                if trailer_url:
+                    st.markdown(f"[▶️ Watch Trailer on YouTube]({trailer_url})")
 
-    st.markdown("---")
+            st.markdown("---")
 
 st.caption("🚀 Developed by Ali Ahmed Zaki")
+
+
+
 
