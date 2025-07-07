@@ -97,8 +97,9 @@ if st.button("🔍 عرض التوصيات"):
         for i, row in results.iterrows():
             col1, col2 = st.columns([1, 3])
             with col1:
-                poster_url, rating = fetch_poster(row['id'])
-                st.image(poster_url, use_column_width=True)
+    poster_url, rating = fetch_poster(row['id'])
+    st.image(poster_url, use_container_width=True)
+
             with col2:
                 st.markdown(f"### 🎞️ {row['title']}")
                 st.markdown(f"⭐️ التقييم: `{row['vote_average']}` | 🗳️ عدد الأصوات: `{row['vote_count']}`")
