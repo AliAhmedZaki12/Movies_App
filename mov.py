@@ -85,7 +85,7 @@ def fetch_trailer_url(movie_id):
 # ====================================================
 # 7. دالة التوصية بالأفلام
 # ====================================================
-def recommend(movie_title, df, similarity_matrix, top_n=5):
+def recommend(movie_title, df, similarity_matrix, top_n=10):
     if movie_title not in df['title'].values:
         return pd.DataFrame()
     idx = df[df['title'] == movie_title].index[0]
@@ -111,29 +111,32 @@ if st.button("🔍 Show Recommendations"):
         st.warning("⚠️ No recommendations found for this movie.")
     else:
         st.subheader(f"🎯 Top Movies Similar to: {selected_movie}")
-        
-        for i, row in results.iterrows():
-            col1, col2 = st.columns([1, 3])
+        st.markdown("---")
 
-            with col1:
-                poster_url, rating = fetch_poster(row['id'])
+        # ===== التعديل: عرض الأفلام أفقيًا =====
+        num_cols = 5  # عدد الأفلام في الصف الواحد
+        cols = st.columns(num_cols)
+
+        for idx, row in enumerate(results.itertuples()):
+            col = cols[idx % num_cols]  # توزيع الأفلام على الأعمدة
+            with col:
+                poster_url, rating = fetch_poster(row.id)
                 st.image(poster_url, use_container_width=True)
+                st.markdown(f"**🎞️ {row.title}**")
+                st.markdown(f"⭐ {row.vote_average:.1f}")
 
-            with col2:
-                st.markdown(f"### 🎞️ {row['title']}")
-                st.markdown(f"⭐ Rating: `{row['vote_average']}` | 🗳️ Votes: `{row['vote_count']}`")
-                st.markdown(f"🎭 Genres: `{row['genres']}` | 🎬 Director: `{row['director']}`")
-                st.markdown(f"📝 {row['overview'][:500]}...")
-
-                trailer_url = fetch_trailer_url(row['id'])
+                trailer_url = fetch_trailer_url(row.id)
                 if trailer_url:
-                    st.markdown(f"[▶️ Watch Trailer on YouTube]({trailer_url})")
+                    st.markdown(f"[▶️ Watch Trailer]({trailer_url})")
 
-            st.markdown("---")
+        st.markdown("---")
 
 st.caption("🚀 Developed by Ali Ahmed Zaki")
 
-
-
-
-
+# تحسينات شكلية بسيطة
+st.markdown("""
+    <style>
+    img {border-radius: 12px;}
+    .stImage {margin-bottom: -10px;}
+    </style>
+""", unsafe_allow_html=True)
