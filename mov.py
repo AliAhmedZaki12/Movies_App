@@ -1,27 +1,32 @@
-
-
 # app.py
 
+import os
 import streamlit as st
 import pandas as pd
 import numpy as np
 import requests
-import pickle
+from dotenv import load_dotenv
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Streamlit page configuration
+# ====================================================
+# 1. إعداد الصفحة في Streamlit
+# ====================================================
 st.set_page_config(page_title="🎬 Movie Recommendation System", layout="wide")
 
-# ========== 1. Load API Key from Pickle ==========
-@st.cache_data
-def load_api_key():
-    with open("tmdb_api_key.pkl", "rb") as f:
-        return pickle.load(f)
+# ====================================================
+# 2. تحميل مفتاح TMDB من البيئة (آمن)
+# ====================================================
+load_dotenv()  # تحميل القيم من ملف .env أو من GitHub Secrets
+api_key = os.getenv("TMDB_API_KEY")
 
-api_key = load_api_key()
+if not api_key:
+    st.error("❌ لم يتم العثور على TMDB_API_KEY! تأكد من إضافته إلى Secrets أو .env")
+    st.stop()
 
-# ========== 2. Load and Prepare Data ==========
+# ====================================================
+# 3. تحميل البيانات ومعالجتها
+# ====================================================
 @st.cache_data
 def load_data():
     df = pd.read_csv("movies.csv")
@@ -36,7 +41,9 @@ def load_data():
 
 movies = load_data()
 
-# ========== 3. Create Similarity Matrix ==========
+# ====================================================
+# 4. إنشاء مصفوفة التشابه
+# ====================================================
 @st.cache_data
 def create_similarity_matrix(df):
     tfidf = TfidfVectorizer(stop_words='english')
@@ -46,7 +53,9 @@ def create_similarity_matrix(df):
 
 similarity_matrix = create_similarity_matrix(movies)
 
-# ========== 4. Fetch Poster ==========
+# ====================================================
+# 5. جلب البوستر من TMDB API
+# ====================================================
 def fetch_poster(movie_id):
     url = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}&language=en-US'
     response = requests.get(url)
@@ -61,7 +70,9 @@ def fetch_poster(movie_id):
 
     return poster_url, rating
 
-# ========== 5. Fetch YouTube Trailer ==========
+# ====================================================
+# 6. جلب رابط التريلر من YouTube عبر TMDB
+# ====================================================
 def fetch_trailer_url(movie_id):
     url = f'https://api.themoviedb.org/3/movie/{movie_id}/videos?api_key={api_key}&language=en-US'
     response = requests.get(url)
@@ -71,7 +82,9 @@ def fetch_trailer_url(movie_id):
             return f"https://www.youtube.com/watch?v={video['key']}"
     return None
 
-# ========== 6. Recommend Function ==========
+# ====================================================
+# 7. دالة التوصية بالأفلام
+# ====================================================
 def recommend(movie_title, df, similarity_matrix, top_n=5):
     if movie_title not in df['title'].values:
         return pd.DataFrame()
@@ -82,7 +95,9 @@ def recommend(movie_title, df, similarity_matrix, top_n=5):
     recommended = df.iloc[[i[0] for i in sim_scores]]
     return recommended
 
-# ========== 7. Streamlit UI ==========
+# ====================================================
+# 8. واجهة Streamlit
+# ====================================================
 st.title("🎬 Movie Recommendation System")
 st.markdown("Select a movie and get recommendations based on its plot, genres, cast, keywords, and director.")
 
@@ -117,6 +132,7 @@ if st.button("🔍 Show Recommendations"):
             st.markdown("---")
 
 st.caption("🚀 Developed by Ali Ahmed Zaki")
+
 
 
 
