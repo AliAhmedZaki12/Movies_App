@@ -49,5 +49,4 @@ The example dataset (`movies.csv`) demonstrates the framework on real-world stru
 
 ---
 
-## 🧩 Project Structure
 
