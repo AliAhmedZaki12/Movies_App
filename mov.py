@@ -10,18 +10,18 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # ====================================================
-# 1. إعداد الصفحة في Streamlit
+#                    ( Streamlit)
 # ====================================================
 st.set_page_config(page_title="🎬 Movie Recommendation System", layout="wide")
 
 # ====================================================
-# 2. تحميل مفتاح TMDB من البيئة (آمن)
+#                   ( TMDB )
 # ====================================================
-load_dotenv()  # تحميل القيم من ملف .env أو من GitHub Secrets
+load_dotenv()  
 api_key = os.getenv("TMDB_API_KEY")
 
 if not api_key:
-    st.error("❌ لم يتم العثور على TMDB_API_KEY! تأكد من إضافته إلى Secrets أو .env")
+    st.error(" لم يتم العثور على TMDB_API_KEY! تأكد من إضافته إلى Secrets أو .env")
     st.stop()
 
 # ====================================================
@@ -133,10 +133,3 @@ if st.button("🔍 Show Recommendations"):
 
 st.caption("🚀 Developed by Ali Ahmed Zaki")
 
-# تحسينات شكلية بسيطة
-st.markdown("""
-    <style>
-    img {border-radius: 12px;}
-    .stImage {margin-bottom: -10px;}
-    </style>
-""", unsafe_allow_html=True)
